@@ -7,4 +7,4 @@ Interactive war table for Farcastles, a text-based game on Farcaster, where play
 
 [Farcastles channel](https://warpcast.com/~/channel/farcastles)
 
-[Farcastles info](hthttps://pinnate-mandarin-e67.notion.site/Farcastles-4fe454e6a4034f688aae9e5b15dab5cc)
+[Farcastles info](https://pinnate-mandarin-e67.notion.site/Farcastles-4fe454e6a4034f688aae9e5b15dab5cc)
