@@ -5,6 +5,7 @@ let fc_data_string, fc_data, fc_data_health, fc_data_south, fc_data_north;
 let south_date_sorted, north_date_sorted, south_hour_grouped, north_hour_grouped;
 
 let max_attacks_in_hour = 0;
+let ms_in_h = 3600000; // miliseconds in an hour
 
 let color_high, color_low;
 
@@ -14,11 +15,7 @@ let grid_n_width = 100;
 let grid_n_height = 250;
 let grid_cell_dim = [5, 5];
 
-let grid_offset_south_x = 50;
-let grid_offset_south_y = 15;
 
-let legend_offset_south_x = 25;
-let legend_offset_south_y = 50;
 
 
 
@@ -40,260 +37,44 @@ fetch("./data/farcastles_fc_data_round_19.ndjson")
 
 
 
-const palette_pigments = {
-
-    "horizon, sunshine, grapefruit": {
-
-        "Otti": ["#a3d3ff", "#ff855f", "#ffe550"], // light blue, light red, yellow - Otti Berger
-        "Stölzl": ["#c44414", "#daa211", "#255080"], // red, yellow, blue - Gunta Stölzl
-        "Albers": ["#e51335", "#2a72ae", "#fbb515"], // red, blue, yellow - Anni Albers
-        "Brandt": ["#3bb3ff", "#ffbb33", "#ff2244"], // light blue, orange, red - Marianne Brandt
-        "Koch-Otte": ["#ee5626", "#eebb22", "#4d9db9", "#7cc1c1"], // red, yellow, blue, light blue - Benita Koch-Otte
-        "Arndt": ["#e22e82", "#efbf33", "#3555a5"], // red, yellow, blue - Gertrude Arndt
-        "Siedhoff-Buscher": ["#ebb707", "#e84818", "#266396", "#eecece"], // yellow, red, blue, light lila - Alma Siedhoff-Buscher
-        "Heymann": ["#ee2f2f", "#f2cd22", "#1b94bb", "#faaaba"], // red, yellow, blue, light pink - Margarete Heymann
-
-    },
-
-    "night, embers, citrus": {
-
-        "van der Rohe": ["#f34333", "#fdd666", "#275777", "#090909"], // - Ludwig Mies van der Rohe
-        "Breuer": ["#ffbf0b", "#ee3e6e", "#2277a7", "#090909"], // - Marcel Breuer
-        "Gropius": ["#e51335", "#2a72ae", "#fbb515", "#090909"], //red, blue, yellow, black - Walter Gropius
-        "Le Corbusier": ["#f24222", "#fccc0c", "#4888c8", "#090909"], // red, yellow, blue, black - Le Corbusier
-
-    },
-
-    "ivy, apatite, tourmaline": {
-
-        "O'Keeffe": ["#0e4a4e", "#ff9777", "#5484a8"], // green, light red, blue - Georgia O'Keeffe
-        "Dalí": ["#e54545", "#f77757", "#fccc66", "#fafa66", "#1ac1ca"], // - Salvador Dalí
-        "Matisse": ["#06add6", "#066888", "#f0cc0c", "#dd1d1d"], // - Henri Matisse
-        "Kandinsky": ["#ffbf0b", "#ee3e6e", "#2277a7", "#33936d"], // - Wassily Kandinsky
-        "Chagall": ["#f6af06", "#1e66aa", "#019166", "#e74422"], // orange yellow, blue, green, red - Marc Chagall
-        "Negreiros": ["#f8c8de", "#f2e222", "#28b2d2", "#668833", "#ef6e7e"], // light pink, yellow, blue, green, red - Almada Negreiros
-        "Picasso": ["#f33373", "#eed333", "#445e7e", "#19a199"], // red, yellow, blue, teal - Pablo Picasso
-        "Klee": ["#de3e1e", "#de9333", "#007555", "#889979", "#7aa7a7"], // red, yellow, green, olive green, light green - Paul Klee
-
-    },
-
-    "sodalite, glacier, rust": {
-
-        "Planck": ["#d83818", "#224772", "#151a1a"], // red, blue, black - Max Planck
-        "Thomson": ["#144b5b", "#088191", "#e5fde5", "#466994", "#f55b66"], // - Sir Joseph John Thomson
-        "Einstein": ["#ebe0ce", "#c5c5bb", "#242d44", "#e4042e"], // light gray, gray, dark blue, red - Albert Einstein
-        "Heisenberg": ["#e11e21", "#e7007e", "#005aa5", "#5ec5ee"], // red, pink, blue, light blue - Werner Heisenberg
-        "Bohr": ["#f999a9", "#044499", "#1a88c1", "#77aee7", "#a6d6d6"], // light pink, blue, light blue, super light blue, light teal - Niels Bohr
-        "Feynman": ["#004999", "#557baa", "#ff4f44", "#ffbcbc"], // deep blue, blue, red, light lila - Richard Feynman
-        "Dirac": ["#db4545", "#3a6a93", "#2e3855", "#a3c6d3"], // red, blue, dark blue, light blue - Paul Dirac
-
-    },
-
-    "ocean, lapis, sulphur": {
-
-        "Babbage": ["#1a3daa", "#244888", "#2277d7", "#62aad6", "#f2d552"], // - Charles Babbage
-        "Lovelace": ["#dafaff", "#00bbfb", "#005995", "#002044"], // - Ada Lovelace
-        "Leibniz": ["#a3e3dd", "#1c6dd6", "#2c2c44", "#ffd525"], // light teal, blue, dark gray, yellow - Gottfried Wilhelm Leibniz
-        "Boole": ["#070c0c", "#1d5581", "#fece3c", "#f8e288", "#9fc999"], // - George Boole
-
-    },
-
-    "moss, cedar, algae": {
-
-        "Zancan": ["#445522", "#788c33", "#b5be5e", "#242414"], // - Zancan
-        "Muir": ["#cec09c", "#505e3e", "#374727", "#2a3322"], // light brown, light olive, dark green, dark olive - John Muir
-        "Thoreau": ["#144b5b", "#1a966a", "#88d899", "#cadaba"], // - Henry David Thoreau
-
-    },
-
-    "ink, steel, salt": {
-
-        "Hokusai": ["#7d9aa7", "#c0b8a8", "#ddd4c4", "#10244a", "#444b4e"], // - Katsushika Hokusai
-        "Hiroshige": ["#20335c", "#1c2244", "#1d1f2d"], // blue, dark blue, black - Utagawa Hiroshige
-
-    },
-
-    "charcoal, papyrus, marble": {
-
-        "Charcoal": ["#090909", "#1a1a1a", "#1d1d1d", "#222222", "#2c2c2c", "#3c3c3c"], // black, black, black, black, dark gray, gray
-        "Adams": ["#2a2b2c", "#1e1e1e"], // dark gray, black - Ansel Adams
-        "New York Times": ["#cac5b5", "#1e1e1e"], // gray, black
-
-    },
-
-    "murex, rhodochrosite, marshmallow": {
-
-        "Minsky": ["#c5e5f5", "#fd5d9d", "#fccce0"], // - Marvin Minsky
-        "Newell": ["#8d00d8", "#d722b7", "#f288c2", "#f9c66c", "#e2e2e2"], // - Allen Newell
-        "Simon": ["#1f336f", "#553773", "#8b3b7b", "#f7447f"], // - Herbert A. Simon
-        "McCarthy": ["#3fb3aa", "#7cc7ac", "#dadaaa", "#fe9e9e", "#ff3f7f"], // - John McCarthy
-        "Solomonoff": ["#e77e99", "#6cc6dd", "#866686"], // light pink, light blue, light purple - Ray Solomonoff
-        "Shannon": ["#665d8d", "#7799aa", "#d885a5", "#fccebb"], // purple, teal, pink, beige - Claude Shannon
-        "von Neumann": ["#4a0020", "#550533", "#750555", "#990f5f"], // dark maroon, maroon, light maroon, maroon purple - John von Neumann
-        "Turing": ["#e40422", "#e33388", "#434394", "#191919"], // red, pink, blue, black - Alan Turing
-
-    },
-
-    "furnace, ruby, soot": {
-
-        "Kapoor": ["#900f3f", "#c70033", "#ff5333", "#ffcc00"], // maroon, red, orange, yellow - Anish Kapoor
-        "Golid": ["#fece44", "#ff5333", "#ff99b9"], // yellow, red, light pink - Kjetil Golid
-        "Busia": ["#e51335", "#090909"], // red, black - Kwame Bruce Busia
-        "Judd": ["#ff2244", "#e74422", "#e11e21", "#faaf0f", "#fbb515", "#ff855f", "#191919"], // red, red, red, orange yellow, yellow, light red, black - Donald Judd
-        "Malevich": ["#e51335", "#1d1d1d", "#fcc1c1"], // red, black, light pink - Kazimir Malevich
-
-    }
-
-}
-
-
-
-const palette_arrays = [
-
-    [
-
-        ["#a3d3ff", "#fefaee", "#ff855f", "#ffe550"], // light blue, white, light red, yellow - Otti Berger
-        ["#c44414", "#daa211", "#255080", "#e7e7d7"], // red, yellow, blue, white - Gunta Stölzl
-        ["#f9f0df", "#e51335", "#2a72ae", "#fbb515"], // white, red, blue, yellow - Anni Albers
-        ["#3bb3ff", "#feeddd", "#ffbb33", "#ff2244"], // light blue, white, orange, red - Marianne Brandt
-        ["#ee5626", "#eebb22", "#4d9db9", "#f5f5d5", "#7cc1c1"], // red, yellow, blue, white, light blue - Benita Koch-Otte
-        ["#e22e82", "#efbf33", "#3555a5", "#e7e7d7"], // red, yellow, blue, white - Gertrude Arndt
-        ["#ebb707", "#e84818", "#266396", "#eecece", "#e4e4e4"], // yellow, red, blue, light lila, white - Alma Siedhoff-Buscher
-        ["#ee2f2f", "#f2cd22", "#1b94bb", "#faaaba", "#feeede"], // red, yellow, blue, light pink, white - Margarete Heymann
-
-    ],
-
-    [
-
-        ["#f34333", "#fdd666", "#275777", "#f3f3f3", "#090909"], // - Ludwig Mies van der Rohe
-        ["#ffbf0b", "#ee3e6e", "#2277a7", "#f9f0df", "#090909"], // - Marcel Breuer
-        ["#f9f0df", "#e51335", "#2a72ae", "#fbb515", "#090909"], // white, red, blue, yellow, black - Walter Gropius
-        ["#f24222", "#fccc0c", "#4888c8", "#f9f0df", "#090909"], // red, yellow, blue, white, black - Le Corbusier
-
-    ],
-
-    [
-
-        ["#0e4a4e", "#ff9777", "#ead2a2", "#5484a8"], // green, light red, beige, blue - Georgia O'Keeffe
-        ["#e54545", "#f77757", "#fccc66", "#fafa66", "#1ac1ca"], // - Salvador Dalí
-        ["#06add6", "#066888", "#f0cc0c", "#fff1d1", "#dd1d1d"], // - Henri Matisse
-        ["#ffbf0b", "#ee3e6e", "#2277a7", "#33936d", "#f9f0df"], // - Wassily Kandinsky
-        ["#f6af06", "#1e66aa", "#eee7d7", "#019166", "#e74422"], // orange yellow, blue, white, green, red - Marc Chagall
-        ["#f8c8de", "#f2e222", "#28b2d2", "#668833", "#ef6e7e", "#f2f2e2"], // light pink, yellow, blue, green, red, white - Almada Negreiros
-        ["#f33373", "#eed333", "#445e7e", "#19a199", "#ede8dd"], // red, yellow, blue, teal, white - Pablo Picasso
-        ["#de3e1e", "#de9333", "#007555", "#eccdad", "#889979", "#7aa7a7"], // red, yellow, green, white, olive green, light green - Paul Klee
-
-    ],
-
-    [
-
-        ["#f8f8e8", "#d83818", "#224772", "#151a1a"], // white, red, blue, black - Max Planck
-        ["#144b5b", "#088191", "#e5fde5", "#466994", "#f55b66"], // - Sir Joseph John Thomson
-        ["#ebe0ce", "#c5c5bb", "#242d44", "#e4042e"], // light gray, gray, dark blue, red - Albert Einstein
-        ["#f9f9f0", "#e11e21", "#e7007e", "#005aa5", "#5ec5ee"], // white, red, pink, blue, light blue - Werner Heisenberg
-        ["#f999a9", "#044499", "#1a88c1", "#77aee7", "#a6d6d6", "#f9f9f0"], // light pink, blue, light blue, super light blue, light teal, white - Niels Bohr
-        ["#004999", "#557baa", "#ff4f44", "#ffbcbc", "#fff8e8"], // deep blue, blue, red, light lila, white - Richard Feynman
-        ["#db4545", "#d0e0e0", "#3a6a93", "#2e3855", "#a3c6d3"], // red, white, blue, dark blue, light blue - Paul Dirac
-
-    ],
-
-    [
-
-        ["#1a3daa", "#244888", "#2277d7", "#62aad6", "#f2d552"], // - Charles Babbage
-        ["#dafaff", "#00bbfb", "#005995", "#002044"], // - Ada Lovelace
-        ["#fff8f8", "#a3e3dd", "#1c6dd6", "#2c2c44", "#ffd525"], // white, light teal, blue, dark gray, yellow - Gottfried Wilhelm Leibniz
-        ["#070c0c", "#1d5581", "#fece3c", "#f8e288", "#9fc999"], // - George Boole
-
-    ],
-
-    [
-
-        ["#445522", "#788c33", "#b5be5e", "#242414", "#f2f2f2"], // - Zancan
-        ["#cec09c", "#505e3e", "#374727", "#2a3322"], // light brown, light olive, dark green, dark olive - John Muir
-        ["#144b5b", "#1a966a", "#88d899", "#cadaba", "#f9e9d9"], // - Henry David Thoreau
-
-    ],
-
-    [
-
-        ["#7d9aa7", "#c0b8a8", "#ddd4c4", "#10244a", "#444b4e"], // - Katsushika Hokusai
-        ["#ebe0ce", "#20335c", "#1c2244", "#1d1f2d"], // light gray, blue, dark blue, black - Utagawa Hiroshige
-
-    ],
-
-    [
-
-        ["#090909", "#1a1a1a", "#1d1d1d", "#222222", "#2c2c2c", "#3c3c3c"], // black, black, black, black, dark gray, gray
-        ["#cac5b5", "#ebe0ce", "#f9f0df", "#eee7d7", "#fff8f8", "#feeddd"], // gray, light gray, white, white, white
-        ["#ebe0ce", "#2a2b2c", "#1e1e1e"], // light gray, dark gray, black - Ansel Adams
-        ["#ebe0ce", "#cac5b5", "#1e1e1e"], // light gray, gray, black
-
-    ],
-
-    [
-
-        ["#c5e5f5", "#fd5d9d", "#fccce0", "#feefef"], // - Marvin Minsky
-        ["#8d00d8", "#d722b7", "#f288c2", "#f9c66c", "#e2e2e2"], // - Allen Newell
-        ["#1f336f", "#553773", "#8b3b7b", "#f7447f", "#f9f0df"], // - Herbert A. Simon
-        ["#3fb3aa", "#7cc7ac", "#dadaaa", "#fe9e9e", "#ff3f7f"], // - John McCarthy
-        ["#e77e99", "#6cc6dd", "#866686", "#f9f9f0"], // light pink, light blue, light purple, white - Ray Solomonoff
-        ["#665d8d", "#7799aa", "#d885a5", "#fccebb"], // purple, teal, pink, beige - Claude Shannon
-        ["#4a0020", "#550533", "#750555", "#990f5f", "#f9f0df"], // dark maroon, maroon, light maroon, maroon purple, white - John von Neumann
-        ["#e40422", "#e33388", "#434394", "#191919", "#ece3d3"], // red, pink, blue, black, white - Alan Turing
-
-    ],
-
-    [
-
-        ["#900f3f", "#c70033", "#ff5333", "#ffcc00", "#f9f0df"], // maroon, red, orange, yellow, white - Anish Kapoor
-        ["#fece44", "#ede8dd", "#ff5333", "#ff99b9"], // yellow, white, red, light pink - Kjetil Golid
-        ["#f9f0df", "#e51335", "#090909"], // white, red, black - Kwame Bruce Busia
-        ["#e51335", "#e4042e", "#d83818", "#ff2244", "#e74422", "#e11e21", "#faaf0f", "#fbb515", "#ff855f", "#191919"], // red, red, red, red, red, red, orange yellow, yellow, light red, black - Donald Judd
-        ["#ece3d3", "#e51335", "#1d1d1d", "#fcc1c1"], // light gray, red, black, light pink - Kazimir Malevich
-
-    ]
-
-];
-
-
-
-
-
+// palettes sorted according to hue
+// used this function - palette.sort(function (a, b) { return hue(a) - hue(b) });
 let palettes_hue_sorted = [
-
+ 
     [
-        "#ff855f", "#ffe550", "#daa211", "#e7e7d7", "#e51335", "#2a72ae", "#3bb3ff", "#ffbb33", "#ff2244", "#ee5626", "#4d9db9", "#f5f5d5",
-        "#7cc1c1", "#e22e82", "#e84818", "#266396", "#f2cd22", "#1b94bb", "#f34333", "#fdd666", "#ffbf0b", "#2277a7", "#fccc0c", "#4888c8"
+        '#f34333', '#e84818', '#ff855f', '#ee5626', '#ffbb33', '#daa211', '#ffbf0b', '#fdd666', '#fccc0c', '#f2cd22', '#ffe550', '#e7e7d7',
+        '#f5f5d5', '#7cc1c1', '#1b94bb', '#4d9db9', '#2277a7', '#3bb3ff', '#2a72ae', '#266396', '#4888c8', '#e22e82', '#e51335', '#ff2244'
     ], // blue / red / yellow
 
     [
-        "#0e4a4e", "#5484a8", "#f77757", "#fccc66", "#06add6", "#f0cc0c", "#fff1d1", "#ffbf0b", "#ee3e6e", "#33936d", "#f6af06", "#eee7d7",
-        "#019166", "#f8c8de", "#f2e222", "#668833", "#ef6e7e", "#f2f2e2", "#eed333", "#445e7e", "#ede8dd", "#de3e1e", "#007555", "#889979"
+        '#de3e1e', '#f77757', '#fccc66', '#ede8dd', '#fff1d1', '#eee7d7', '#f6af06', '#ffbf0b', '#f0cc0c', '#eed333', '#f2e222', '#f2f2e2',
+        '#668833', '#889979', '#33936d', '#019166', '#007555', '#0e4a4e', '#06add6', '#5484a8', '#445e7e', '#f8c8de', '#ee3e6e', '#ef6e7e'
     ], // red / teal / green / yellow
 
     [
-        "#d83818", "#144b5b", "#088191", "#e5fde5", "#f55b66", "#fff8e8", "#db4545", "#a6d6d6", "#004999", "#557baa", "#ff4f44", "#ffbcbc", 
-        "#ebe0ce", "#242d44", "#e11e21", "#005aa5", "#5ec5ee", "#d0e0e0", "#3a6a93", "#2e3855", "#f999a9", "#044499", "#1a88c1", "#77aee7"
+        '#db4545', '#ffbcbc', '#ff4f44', '#d83818', '#ebe0ce', '#fff8e8', '#e5fde5', '#a6d6d6', '#d0e0e0', '#088191', '#144b5b', '#5ec5ee',
+        '#1a88c1', '#005aa5', '#3a6a93', '#77aee7', '#004999', '#557baa', '#044499', '#242d44', '#2e3855', '#f999a9', '#f55b66', '#e11e21'
     ], // blue / red / white
 
     [
-        "#1a3daa", "#244888", "#2277d7", "#62aad6", "#f2d552", "#bfffdd", "#00bbfb", "#005995", "#002044", "#b4c8ac", "#1d5256", "#9fc999",
-        "#fff8f8", "#a3e3dd", "#1c6dd6", "#2c2c44", "#ffd525", "#070c0c", "#1d5581", "#004fbe", "#b0e3c4", "#fece3c", "#f8e288", "#2280b1"
+        '#fff8f8', '#fece3c', '#f8e288', '#ffd525', '#f2d552', '#b4c8ac', '#9fc999', '#b0e3c4', '#bfffdd', '#a3e3dd', '#070c0c', '#1d5256',
+        '#00bbfb', '#2280b1', '#62aad6', '#005995', '#1d5581', '#002044', '#2277d7', '#1c6dd6', '#004fbe', '#244888', '#1a3daa', '#2c2c44'
     ], // blue / teal / yellow
 
     [
-        "#445522", "#788c33", "#b5be5e", "#244e04", "#cec09c", "#505e3e", "#374727", "#2a3322", "#144b5b", "#1a966a", "#88d899", "#2a2c41",
-        "#7d9aa7", "#ddd4c4", "#10244a", "#444b4e", "#ebe0ce", "#20335c", "#1c2244", "#1d1e33", "#1d5e6a", "#c0cdc8", "#f9e9d9", "#b5ab6d"
+        '#f9e9d9', '#ebe0ce', '#ddd4c4', '#cec09c', '#b5ab6d', '#b5be5e', '#788c33', '#445522', '#505e3e', '#374727', '#2a3322', '#244e04',
+        '#88d899', '#c0cdc8', '#1a966a', '#1d5e6a', '#144b5b', '#444b4e', '#7d9aa7', '#10244a', '#20335c', '#1c2244', '#2a2c41', '#1d1e33'
+
     ], // green / blue / white
 
     [
-        "#c5e5f5", "#8d00d8", "#d722b7", "#f9c66c", "#e2e2e2", "#1f336f", "#553773", "#8b3b7b", "#3fb3aa", "#7cc7ac", "#dadaaa", "#fd5d9d",
-        "#6cc6dd", "#7799aa", "#fccebb", "#550533", "#750555", "#990f5f", "#e40422", "#434394", "#ece3d3", "#ff3f7f", "#fe9e9e", "#f9f0df"
+        '#e2e2e2', '#fe9e9e', '#fccebb', '#f9c66c', '#ece3d3', '#f9f0df', '#dadaaa', '#7cc7ac', '#3fb3aa', '#6cc6dd', '#c5e5f5', '#7799aa',
+        '#1f336f', '#434394', '#553773', '#8d00d8', '#d722b7', '#8b3b7b', '#750555', '#990f5f', '#550533', '#fd5d9d', '#ff3f7f', '#e40422'
     ], // purple / teal / yellow
 
     [
-        "#900f3f", "#c70033", "#ff5333", "#ffcc00", "#f9f0df", "#fee17c", "#ede8dd", "#d7116c", "#960422", "#f9966a", "#ff336f", "#511919",
-        "#e4042e", "#d83818", "#ff2244", "#e74422", "#e11e21", "#fab6a7", "#fbb515", "#ff855f", "#191919", "#ece3d3", "#fcc1c1", "#f9ce6a"
+        '#511919', '#191919', '#fcc1c1', '#ff5333', '#d83818', '#e74422', '#fab6a7', '#ff855f', '#f9966a', '#ece3d3', '#f9f0df', '#ede8dd',
+        '#fbb515', '#f9ce6a', '#fee17c', '#ffcc00', '#d7116c', '#900f3f', '#ff336f', '#c70033', '#960422', '#e4042e', '#ff2244', '#e11e21'
     ], // red / yellow / white
 
     [
@@ -336,11 +117,11 @@ let palettes_hue_sorted = [
 
 
 
+let palette_south = palettes_hue_sorted[gene_rand_int(0, palettes_hue_sorted.length)];
+let palette_north = palettes_hue_sorted[gene_rand_int(0, palettes_hue_sorted.length)];
 
-let pigments = gene_pick_property(palette_pigments);
-let palette = gene_pick_property(pigments);
+//palette_south = getShiftedArray(test_palette, 0);
+//palette_north = getShiftedArray(palette_north, 0);
 
-
-let test_palette = palettes_hue_sorted[gene_rand_int(0, palettes_hue_sorted.length)];
-
-
+//console.log(palette_south);
+//console.log(palette_north);
