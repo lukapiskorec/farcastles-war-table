@@ -13,9 +13,14 @@ let color_high, color_low;
 
 let grid_n_width = 100;
 let grid_n_height = 250;
-let grid_cell_dim = [5, 5];
+let grid_cell_dim;
+let dim_extra_scale = 1.1; // default is 1.0, other values will scale the size of the cells to create an overlap (reduces artifacts)
 
+let gap_between_castles = 50;
 
+let jitter_temp = 0.1; // range for random jitter of cells to remove artifacts
+
+let progress;
 
 
 

@@ -31,6 +31,8 @@ function setup() {
   parse_fc_data();
   // group farcastles entries by hour
   group_entries_by_hour();
+  // calculate grid cell and other dimensions so to fit into the screen
+  calculate_dimensions();
 
 }
 
@@ -48,19 +50,21 @@ function draw() {
   // set text properties
   textSize(20);
   textAlign(LEFT);
-  stroke(255, 255, 255)
+  //stroke(255, 255, 255)
   noStroke();
 
-
+  // calculates the progress of battle to display (progress ranges from 0 to 1)
+  calculate_progress();
 
   // display castle damage per hour as a grid of cells
-  display_damage_per_hour(south_hour_grouped, palette_south, 50, 15);
-  display_damage_per_hour(north_hour_grouped, palette_north, 600, 15);
+  display_damage_per_hour("south", south_hour_grouped, palette_south, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles / 2, height * 0.05);
+  display_damage_per_hour("north", north_hour_grouped, palette_north, width / 2 + gap_between_castles / 2, height * 0.05);
 
   // display legend for castle damage per hour
-  display_damage_legend(palette_south, 25, 50);
-  display_damage_legend(palette_north, 575, 50);
+  display_damage_legend(palette_south, gap_between_castles / 2, height * 0.05);
+  display_damage_legend(palette_north, width - gap_between_castles / 2, height * 0.05);
 
+  //noLoop();
 
 }
 

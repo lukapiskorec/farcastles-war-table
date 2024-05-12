@@ -25,7 +25,7 @@ function parse_fc_data() {
     console.log("Data entries north: ", fc_data_north.length);
     console.log("Other data entries: ", fc_data.length - fc_data_north.length - fc_data_south.length);
 
-    //console.log(fc_data_south);
+    console.log(fc_data_south);
     //console.log(fc_data_north);
 
 }
@@ -63,21 +63,42 @@ function group_entries_by_hour() {
         north_hour_grouped[hour_nr].push(fc_data_north[i]); // add entry to the subarray group according to the hour the attack happened
     }
 
-    //console.log(south_hour_grouped);
+    console.log(south_hour_grouped);
     //console.log(north_hour_grouped);
 
 }
 
 
 
+// calculate grid cell and other dimensions so to fit into the screen
+function calculate_dimensions() {
+    let dim_scale = round((height * 0.9) / grid_n_height, 2);
+    grid_cell_dim = [dim_scale, dim_scale];
+    console.log("dimension scale", dim_scale);
+}
+
+
+
+
+// calculates the progress of battle to display (progress ranges from 0 to 1)
+function calculate_progress() {
+    progress = mouseY / height;
+}
+
+
+
 
 // display castle damage per hour as a grid of cells
-function display_damage_per_hour(hour_grouped, palette, grid_offset_x, grid_offset_y) {
+function display_damage_per_hour(castle_type, hour_grouped, palette, grid_offset_x, grid_offset_y) {
 
+    // we start with full health and zero total damage
     let total_damage = 0;
+    let last_health = 25000; 
+
+    let stop_drawing_damage = false; // will trigger when total_damage reaches 25000
 
     // iterate through all hours
-    for (let i = 0; i < hour_grouped.length; i++) {
+    for (let i = 0; i < hour_grouped.length * progress; i++) {
 
         // each hour will have a different color from the palette
         fill(palette[i % palette.length]);
@@ -87,7 +108,19 @@ function display_damage_per_hour(hour_grouped, palette, grid_offset_x, grid_offs
 
             // extract inflicted damage
             let entry_words = hour_grouped[i][n].text.split(" "); // example ['Player', '376209', 'attacked', 'south', 'for', '10', 'damage.', 'Castle', 'health', 'is', 'now', '561.']
-            let damage = parseInt(entry_words[5]);
+            let recorded_damage = parseInt(entry_words[5]);
+            
+            let health_string = entry_words[11];
+            let health = parseInt(health_string.slice(0, health_string.length - 1));
+
+            //console.log("castle health", health);
+
+            let damage = last_health - health; // for some reason we are getting wrong results when using damage information directly so we have to do it like this
+            last_health = health; // will be used in the next iteration
+
+            //console.log("recorded damage", recorded_damage);
+            //console.log("damage", damage);
+            //console.log("last_health", last_health);
 
             // draw damage squares
             for (let d = 0; d < damage; d++) {
@@ -95,32 +128,69 @@ function display_damage_per_hour(hour_grouped, palette, grid_offset_x, grid_offs
                 let cell_x = (total_damage % grid_n_width) * grid_cell_dim[0] + grid_offset_x;
                 let cell_y = floor(total_damage / grid_n_width) * grid_cell_dim[1] + grid_offset_y;
 
-                rect(cell_x, cell_y, grid_cell_dim[0], grid_cell_dim[1]);
+                // random jitter of cells to remove artifacts
+                cell_x += random(-jitter_temp, jitter_temp);
+                cell_y += random(-jitter_temp, jitter_temp);
+
+                rect(cell_x, cell_y, grid_cell_dim[0] * dim_extra_scale, grid_cell_dim[1] * dim_extra_scale);
 
                 total_damage++; // increment total damage for the castle one point at a time
+
+                // trigger cascading break when we reach total_damage of 25000
+                if (total_damage == 25000) {
+                    stop_drawing_damage = true;
+                    break;
+                }
             }
+
+            // trigger cascading break
+            if (stop_drawing_damage) {break;}
 
         }
 
+        // trigger cascading break
+        if (stop_drawing_damage) {break;}
+
     }
 
-
+    
     // draw leftover castle cells
+    if (!stop_drawing_damage) {
 
-    let leftover_damage = 25000 - total_damage;
-    fill(color("#111111"));
+        let leftover_damage = 25000 - total_damage; // 25000 - total_damage
+        //fill(color("#111111"));
 
-    for (let i = 0; i < leftover_damage; i++) {
 
-        let cell_x = (total_damage % grid_n_width) * grid_cell_dim[0] + grid_offset_x;
-        let cell_y = floor(total_damage / grid_n_width) * grid_cell_dim[1] + grid_offset_y;
+        for (let i = 0; i < leftover_damage; i++) {
 
-        rect(cell_x, cell_y, grid_cell_dim[0], grid_cell_dim[1]);
+            let cell_x = (total_damage % grid_n_width) * grid_cell_dim[0] + grid_offset_x;
+            let cell_y = floor(total_damage / grid_n_width) * grid_cell_dim[1] + grid_offset_y;
 
-        total_damage++; // increment total damage for the castle one point at a time
+            cell_x += random(-jitter_temp, jitter_temp);
+            cell_y += random(-jitter_temp, jitter_temp);
 
+            //let gray_tone = 50 * noise(cell_x * 0.01, cell_y);
+            let gray_tone;
+            let noise_sample = noise(cell_x * 0.01, cell_y);
+            if (noise_sample > 0.70) {gray_tone = 255;}
+            else if (noise_sample > 0.55) {gray_tone = 127;}
+            else {gray_tone = 0;}
+
+            if (castle_type == "south") {gray_tone = 255 - gray_tone}; // invert colors for the south castle
+
+            fill(gray_tone);
+
+
+            rect(cell_x, cell_y, grid_cell_dim[0] * dim_extra_scale, grid_cell_dim[1] * dim_extra_scale);
+
+            total_damage++; // increment total damage for the castle one point at a time
+
+        }
     }
 
+    //console.log("total_damage", total_damage);
+    //console.log("final castle health", last_health);
+    
 
 }
 
@@ -144,6 +214,8 @@ function display_damage_legend(palette, legend_offset_x, legend_offset_y) {
     }
 
 }
+
+
 
 
 
