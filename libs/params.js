@@ -10,19 +10,40 @@ let ms_in_h = 3600000; // miliseconds in an hour
 let color_high, color_low;
 
 
+let round_nr = 19;
 
 let grid_n_width = 100;
 let grid_n_height = 250;
-let grid_cell_dim;
+let grid_cell_dim, dim_scale;
 let dim_extra_scale = 1.1; // default is 1.0, other values will scale the size of the cells to create an overlap (reduces artifacts)
 
 let gap_between_castles = 50;
+let middle_layout_height = 0.8; // proportion of the middle layout height where castle damage grids are displayed
+let upper_layout_height = 0.1; // proportion of the top layout height
+let lower_layout_height = 0.1; // proportion of the top layout height
 
 let jitter_temp = 0.1; // range for random jitter of cells to remove artifacts
 
 let progress;
+let last_timestamp;
 
+let total_attacks_south = 0;
+let total_attacks_north = 0;
+let total_attacks_south_per_hour = 0;
+let total_attacks_north_per_hour = 0;
 
+let total_attackers_south = 0;
+let total_attackers_north = 0;
+let total_attackers_south_per_hour = 0;
+let total_attackers_north_per_hour = 0;
+
+let south_attackers_fids = {};
+let north_attackers_fids = {};
+
+let south_attackers_fids_per_hour = {};
+let north_attackers_fids_per_hour = {};
+
+let south_fids_per_hour_formated, north_fids_per_hour_formated;
 
 
 
