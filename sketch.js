@@ -13,6 +13,11 @@
 function preload() {
 
   MonoMEK = loadFont('assets/MEK-Mono.otf');
+  fc_data_json = loadJSON("./data/farcastles_fc_data_rounds_1-22.json");
+
+  // load ndjson data - every line is a separate string in a list
+  // comment OUT in production
+  //fc_data_ndjson_strings = loadStrings("./data/240515_farcastles_fc_data_timestamped.ndjson", () => { console.log("Farcaster data loaded ✅") });
 
 }
 
@@ -26,8 +31,11 @@ function setup() {
   //rectMode(CENTER);
   textFont(MonoMEK);
 
+  // convert ndjson to json and filter only necessary properties
+  // comment OUT in production - run this separately, then later parse just json directly to speed up loading time
+  //format_ndjson_to_json();
 
-  // parse and extract farcastles data from the ndjson file
+  // parse and extract farcastles data from the nson file
   parse_fc_data();
   // group farcastles entries by hour
   group_entries_by_hour();
@@ -36,19 +44,18 @@ function setup() {
   // calculate grid cell and other dimensions so to fit into the screen
   calculate_dimensions();
   
-
 }
 
 
 
 
 function draw() {
-
+  
   // animate color palettes
   //test_palette = getShiftedArray(test_palette, 1);
 
   background(color("#f3f3f3"));
-  
+
   // calculates the progress of battle to display (progress ranges from 0 to 1)
   calculate_progress();
 
@@ -64,7 +71,7 @@ function draw() {
   display_damage_legend(palette_north, width - gap_between_castles / 2, height * lower_layout_height);
 
   //noLoop();
-
+  
 }
 
 

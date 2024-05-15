@@ -1,7 +1,7 @@
 //////PARAMS//////
 
 let MonoMEK, canvas;
-let fc_data_string, fc_data, fc_data_health, fc_data_south, fc_data_north;
+let fc_data_json, fc_data_ndjson_strings, fc_data_string, fc_data, fc_data_health, fc_data_south, fc_data_north;
 let south_date_sorted, north_date_sorted, south_hour_grouped, north_hour_grouped;
 
 let max_attacks_in_hour = 0;
@@ -9,8 +9,10 @@ let ms_in_h = 3600000; // miliseconds in an hour
 
 let color_high, color_low;
 
+// calibrated for farcastles_fc_data_rounds_1-22.json
+let round_idxs = [undefined, 123704, undefined, undefined, 122930, 122061, undefined, undefined, 106905, 98811, 90770, 82892, 75223, 67507, 60541, 52684, 44974, 37541, 29094, 22027, 14274, 7178, 0];
 
-let round_nr = 19;
+let selected_round = 22; // 10-22 - 25k point system, not possible to select below round 10 for now
 
 let grid_n_width = 100;
 let grid_n_height = 250;
@@ -44,19 +46,6 @@ let south_attackers_fids_per_hour = {};
 let north_attackers_fids_per_hour = {};
 
 let south_fids_per_hour_formated, north_fids_per_hour_formated;
-
-
-
-
-// read the ndjson file
-
-fetch("./data/farcastles_fc_data_round_19.ndjson")
-    .then((res) => res.text())
-    .then((text) => {
-        console.log("Farcaster data loaded ✅");
-        fc_data_string = text;
-    })
-    .catch((e) => console.error(e));
 
 
 

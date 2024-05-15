@@ -2,18 +2,41 @@
 
 
 
-// parse and extract farcastles data from the ndjson file
+// convert ndjson to json and filter only necessary properties
+// run this separately, then later parse just json directly to speed up loading time
+function format_ndjson_to_json() {
+
+    // convert list entries from strings to objects
+    let fc_data_ndjson = fc_data_ndjson_strings.map(s => JSON.parse(s));
+
+    // extract only timestamp and text key / value pairs from every entry to save on memory
+    fc_data = fc_data_ndjson.map((entry) => (({ timestamp, text }) => ({ timestamp, text }))(entry));
+
+    // create object from array - we will save this manually and load it as json instead of ndjson
+    fc_data_json = Object.assign({}, fc_data);
+
+    // copy this from the console, minify and save into a separate json file to be loaded at the beginning
+    console.log(fc_data_json);
+
+}
+
+
+
+
+// parse and extract farcastles data from the json file
 function parse_fc_data() {
 
-    // break data string on newlines, parse each one via JSON.parse(…) and save the result in an array
-    fc_data = fc_data_string.split('\n').map(s => JSON.parse(s));
+    // convert an object into an array
+    fc_data = Object.values(fc_data_json).slice(round_idxs[selected_round], round_idxs[selected_round - 1] + 1);
+    //console.log(fc_data);
 
     // data elements that include the word "health" - "Player 293084 attacked south for 3 damage. Castle health is now 24869."
-    fc_data_health = fc_data.filter(element => element.text.includes("health"))
+    fc_data_health = fc_data.filter(element => element.text.includes("health"));
     // data elements that include the word "south"
-    fc_data_south = fc_data_health.filter(element => element.text.includes("south"))
+    fc_data_south = fc_data_health.filter(element => element.text.includes("outh")); // south or South
     // data elements that include the word "north"
-    fc_data_north = fc_data_health.filter(element => element.text.includes("north"))
+    fc_data_north = fc_data_health.filter(element => element.text.includes("orth")); // north or North
+
 
     // reverses the lists so they run in chronological order
     fc_data_health.reverse();
@@ -27,7 +50,6 @@ function parse_fc_data() {
 
     //console.log(fc_data_south);
     //console.log(fc_data_north);
-
 
     total_attacks_south = fc_data_south.length;
     total_attacks_north = fc_data_north.length;
@@ -78,7 +100,7 @@ function group_entries_by_hour() {
 
 // extract attackers from all entries
 function extract_attackers() {
-    
+
     // go through all south entries
     for (let i = 0; i < fc_data_south.length; i++) {
         let entry_words = fc_data_south[i].text.split(" "); // example ['Player', '376209', 'attacked', 'south', 'for', '10', 'damage.', 'Castle', 'health', 'is', 'now', '561.']
@@ -316,7 +338,7 @@ function display_titles() {
 
     textAlign(CENTER);
     animate_text("FARCASTLES WAR TABLE", "south", width / 2, height * upper_layout_height / 3);
-    animate_text("ROUND " + round_nr.toString(), "north", width / 2, height * 2 * upper_layout_height / 3);
+    animate_text("ROUND " + selected_round.toString(), "north", width / 2, height * 2 * upper_layout_height / 3);
 
     textAlign(LEFT);
     animate_text("SOUTH CASTLE", "south", gap_between_castles / 2, height * upper_layout_height / 3);
@@ -341,7 +363,7 @@ function display_titles() {
     text("total attacks per hour: " + total_attacks_south_per_hour.toString(), gap_between_castles / 2, height * 9 * upper_layout_height / 3);
 
     text("northern attackers:", gap_between_castles / 2, height * 10 * upper_layout_height / 3);
-    
+
 
     textAlign(RIGHT);
     text("!attack north", width - gap_between_castles / 2, height * 3 * upper_layout_height / 3);
@@ -358,10 +380,10 @@ function display_titles() {
 
     textAlign(LEFT);
     text(south_fids_per_hour_formated, gap_between_castles / 2, height * 11 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
-    
+
     textAlign(RIGHT);
     text(north_fids_per_hour_formated, width - gap_between_castles / 2 - (width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles), height * 11 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
-    
+
 
     //console.log(south_fids_per_hour_formated);
     // 19591, 189524, 191958, 192952, 214447, 248509, 250747, 261222, 263300, 266527, 266798, 292208, 296520, 299008, 301276, 301870, 322222, 327318, 338424, 342002, 367801, 368305, 377517, 381561, 382922, 383446, 385262, 401736, 404667, 405589, 412805, 415074, 420682, 431836, 432323, 436149, 447595
