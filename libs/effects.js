@@ -37,6 +37,10 @@ function recalculate_fc_data() {
     // get last timestamp which will be displayed at the bottom of the screen during round changing
     last_timestamp = new Date(fc_data_health[fc_data_health.length - 1].timestamp);
 
+    // reset attackers per hour objects
+    south_attackers_fids_per_hour = {};
+    north_attackers_fids_per_hour = {};
+
 }
 
 
@@ -322,11 +326,17 @@ function display_damage_per_hour(castle_type, hour_grouped, palette, grid_offset
 
 
 // display legend for castle damage per hour
-function display_damage_legend(palette, legend_offset_x, legend_offset_y) {
+function display_damage_legend(castle_type, legend_offset_x, legend_offset_y) {
+
+    let palette;
+
+    if (castle_type == "south") { palette = palette_south; }
+    else { palette = palette_north; }
 
     rectMode(CENTER);
     noStroke();
 
+    // display color squares
     for (let i = 0; i < palette.length; i++) {
 
         // each hour will have a different color from the palette
@@ -336,6 +346,33 @@ function display_damage_legend(palette, legend_offset_x, legend_offset_y) {
         let cell_y = height - legend_offset_y - 4 * i * grid_cell_dim[1];
 
         rect(cell_x, cell_y, grid_cell_dim[0] * 4, grid_cell_dim[1] * 4);
+
+    }
+
+
+    rectMode(CENTER);
+    fill(color("#111111"));
+    strokeWeight(dim_scale * 1);
+    stroke(255);
+    textSize(dim_scale * 4);
+
+    if (castle_type == "south") { textAlign(LEFT, CENTER); }
+    else { textAlign(RIGHT, CENTER); }
+
+    // this will correspond to the hour displayed at the bottom of the screen
+    let start_hour = new Date(north_hour_grouped[0][0].timestamp).getHours() + 1;
+
+    // display hours as text
+    for (let i = 0; i < palette.length; i++) {
+
+        let cell_x = legend_offset_x;
+        let cell_y = height - legend_offset_y - 4 * i * grid_cell_dim[1];
+        let display_hour = (23 + start_hour - i) % 24;
+
+        // display in 6h increments
+        if ((i % 6 == 0) || (i == palette.length - 1)) {
+            text(display_hour + ":00", cell_x, cell_y);
+        }
 
     }
 

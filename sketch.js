@@ -64,8 +64,8 @@ function draw() {
   display_damage_per_hour("north", north_hour_grouped, palette_north, width / 2 + gap_between_castles / 2, height * upper_layout_height);
 
   // display legend for castle damage per hour
-  display_damage_legend(palette_south, gap_between_castles / 2, height * lower_layout_height);
-  display_damage_legend(palette_north, width - gap_between_castles / 2, height * lower_layout_height);
+  display_damage_legend("south", gap_between_castles / 2, height * lower_layout_height);
+  display_damage_legend("north", width - gap_between_castles / 2, height * lower_layout_height);
 
   // display text titles on the screen
   display_titles();
