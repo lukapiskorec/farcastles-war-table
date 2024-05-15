@@ -13,6 +13,8 @@ let color_high, color_low;
 let round_idxs = [undefined, 123704, undefined, undefined, 122930, 122061, undefined, undefined, 106905, 98811, 90770, 82892, 75223, 67507, 60541, 52684, 44974, 37541, 29094, 22027, 14274, 7178, 0];
 
 let selected_round = 22; // 10-22 - 25k point system, not possible to select below round 10 for now
+let min_round = 10; // constrain round number
+let max_round = 22; // constrain round number
 
 let grid_n_width = 100;
 let grid_n_height = 250;
@@ -39,8 +41,7 @@ let total_attackers_north = 0;
 let total_attackers_south_per_hour = 0;
 let total_attackers_north_per_hour = 0;
 
-let south_attackers_fids = {};
-let north_attackers_fids = {};
+let south_attackers_fids, north_attackers_fids;
 
 let south_attackers_fids_per_hour = {};
 let north_attackers_fids_per_hour = {};
@@ -48,6 +49,8 @@ let north_attackers_fids_per_hour = {};
 let south_fids_per_hour_formated, north_fids_per_hour_formated;
 
 
+let left_button_pos, right_button_pos, mouse_pos, left_button_dist, right_button_dist;
+let round_button_size = 20;
 
 
 

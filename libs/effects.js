@@ -22,6 +22,23 @@ function format_ndjson_to_json() {
 
 
 
+// updates data so the new round can be loaded (after round buttons are clicked)
+function recalculate_fc_data() {
+
+    // parse and extract farcastles data from the nson file
+    parse_fc_data();
+    // group farcastles entries by hour
+    group_entries_by_hour();
+    // extract attackers from all entries
+    extract_attackers();
+    // calculate grid cell and other dimensions so to fit into the screen
+    calculate_dimensions();
+
+    // get last timestamp which will be displayed at the bottom of the screen during round changing
+    last_timestamp = new Date(fc_data_health[fc_data_health.length - 1].timestamp);
+
+}
+
 
 // parse and extract farcastles data from the json file
 function parse_fc_data() {
@@ -101,6 +118,10 @@ function group_entries_by_hour() {
 // extract attackers from all entries
 function extract_attackers() {
 
+    // reset attackers objects
+    south_attackers_fids = {};
+    north_attackers_fids = {};
+
     // go through all south entries
     for (let i = 0; i < fc_data_south.length; i++) {
         let entry_words = fc_data_south[i].text.split(" "); // example ['Player', '376209', 'attacked', 'south', 'for', '10', 'damage.', 'Castle', 'health', 'is', 'now', '561.']
@@ -120,7 +141,6 @@ function extract_attackers() {
 
     console.log("Number of south attackers: ", Object.keys(south_attackers_fids).length);
     console.log("Number of north attackers: ", Object.keys(north_attackers_fids).length);
-
 
     total_attackers_south = Object.keys(south_attackers_fids).length;
     total_attackers_north = Object.keys(north_attackers_fids).length;
@@ -336,27 +356,27 @@ function display_titles() {
 
     textSize(dim_scale * 12);
 
-    textAlign(CENTER);
+    textAlign(CENTER, BOTTOM);
     animate_text("FARCASTLES WAR TABLE", "south", width / 2, height * upper_layout_height / 3);
     animate_text("ROUND " + selected_round.toString(), "north", width / 2, height * 2 * upper_layout_height / 3);
 
-    textAlign(LEFT);
+    textAlign(LEFT, BOTTOM);
     animate_text("SOUTH CASTLE", "south", gap_between_castles / 2, height * upper_layout_height / 3);
 
-    textAlign(RIGHT);
+    textAlign(RIGHT, BOTTOM);
     animate_text("NORTH CASTLE", "north", width - gap_between_castles / 2, height * upper_layout_height / 3);
 
 
     textSize(dim_scale * 8);
 
-    textAlign(CENTER);
+    textAlign(CENTER, BOTTOM);
     if (last_timestamp) {
-        let datestring = last_timestamp.getHours() + ":00"; // last_timestamp.getHours() + ":" + last_timestamp.getMinutes()
+        let datestring = last_timestamp.getHours() + ":00";
         text(datestring, width / 2, height - height * 2 * upper_layout_height / 3);
         text(last_timestamp.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), width / 2, height - height * upper_layout_height / 3);
     }
 
-    textAlign(LEFT);
+    textAlign(LEFT, BOTTOM);
     text("!attack south", gap_between_castles / 2, height * 3 * upper_layout_height / 3);
     text("total attackers: " + total_attackers_south.toString(), gap_between_castles / 2, height * 5 * upper_layout_height / 3);
     text("total attacks: " + total_attacks_south.toString(), gap_between_castles / 2, height * 6 * upper_layout_height / 3);
@@ -365,7 +385,7 @@ function display_titles() {
     text("northern attackers:", gap_between_castles / 2, height * 10 * upper_layout_height / 3);
 
 
-    textAlign(RIGHT);
+    textAlign(RIGHT, BOTTOM);
     text("!attack north", width - gap_between_castles / 2, height * 3 * upper_layout_height / 3);
     text("total attackers: " + total_attackers_north.toString(), width - gap_between_castles / 2, height * 5 * upper_layout_height / 3);
     text("total attacks: " + total_attacks_north.toString(), width - gap_between_castles / 2, height * 6 * upper_layout_height / 3);
@@ -378,10 +398,10 @@ function display_titles() {
     rectMode(CORNER);
     textSize(dim_scale * 7);
 
-    textAlign(LEFT);
+    textAlign(LEFT, TOP);
     text(south_fids_per_hour_formated, gap_between_castles / 2, height * 11 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
 
-    textAlign(RIGHT);
+    textAlign(RIGHT, TOP);
     text(north_fids_per_hour_formated, width - gap_between_castles / 2 - (width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles), height * 11 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
 
 
@@ -418,6 +438,93 @@ function animate_text(text_string, castle_type, pos_x, pos_y) {
     stroke(255);
 
     text(text_string, pos_x, pos_y);
+
+}
+
+
+
+
+
+// buttons for changing the round
+function display_round_buttons() {
+
+    left_button_pos = createVector(width / 3, height * upper_layout_height / 2);
+    right_button_pos = createVector(2 * width / 3, height * upper_layout_height / 2);
+    mouse_pos = createVector(mouseX, mouseY);
+    left_button_dist = p5.Vector.dist(left_button_pos, mouse_pos);
+    right_button_dist = p5.Vector.dist(right_button_pos, mouse_pos);
+
+    fill(color("#111111"));
+    strokeWeight(dim_scale * 1);
+    stroke(255);
+
+    textSize(dim_scale * 30);
+    textAlign(CENTER, CENTER);
+
+    // left round button - center at (width / 3, height * upper_layout_height / 2) with radius = round_button_size * dim_scale
+    // check the distance to left button
+    if (left_button_dist < round_button_size * dim_scale / 2) {
+        animate_text("<", "south", width / 3, height * upper_layout_height / 3);
+    } else {
+        text("<", width / 3, height * upper_layout_height / 3);
+    }
+
+    // right round button - center at (2 * width / 3, height * upper_layout_height / 2) with radius = round_button_size * dim_scale
+    // check the distance to right button
+    if (right_button_dist < round_button_size * dim_scale / 2) {
+        animate_text(">", "north", 2 * width / 3, height * upper_layout_height / 3);
+    } else {
+        text(">", 2 * width / 3, height * upper_layout_height / 3);
+    }
+
+
+
+}
+
+
+
+
+
+// resize the canvas when the browser's size changes
+function windowResized() {
+    canvas = resizeCanvas(windowWidth, windowHeight);
+
+    // calculate grid cell and other dimensions so to fit into the screen
+    calculate_dimensions();
+}
+
+
+
+
+// trigger when mouse is clicked
+function mouseClicked() {
+
+    // left round button clicked
+    if (left_button_dist < round_button_size * dim_scale / 2) {
+        console.log("left button clicked");
+
+        // decrement round number
+        selected_round--
+        // clamp round number
+        if (selected_round < min_round) { selected_round = min_round };
+
+        // updates data so the new round can be loaded
+        recalculate_fc_data();
+
+    }
+
+    // right round button clicked
+    if (right_button_dist < round_button_size * dim_scale / 2) {
+        console.log("right button clicked");
+
+        // increment round number
+        selected_round++
+        // clamp round number
+        if (selected_round > max_round) { selected_round = max_round };
+
+        // updates data so the new round can be loaded
+        recalculate_fc_data();
+    }
 
 
 }

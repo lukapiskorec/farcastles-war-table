@@ -59,9 +59,6 @@ function draw() {
   // calculates the progress of battle to display (progress ranges from 0 to 1)
   calculate_progress();
 
-  // display text titles on the screen
-  display_titles();
-
   // display castle damage per hour as a grid of cells
   display_damage_per_hour("south", south_hour_grouped, palette_south, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles / 2, height * upper_layout_height);
   display_damage_per_hour("north", north_hour_grouped, palette_north, width / 2 + gap_between_castles / 2, height * upper_layout_height);
@@ -69,6 +66,12 @@ function draw() {
   // display legend for castle damage per hour
   display_damage_legend(palette_south, gap_between_castles / 2, height * lower_layout_height);
   display_damage_legend(palette_north, width - gap_between_castles / 2, height * lower_layout_height);
+
+  // display text titles on the screen
+  display_titles();
+  
+  // buttons for changing the round
+  display_round_buttons();
 
   //noLoop();
   
