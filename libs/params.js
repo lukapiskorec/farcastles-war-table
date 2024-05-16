@@ -31,6 +31,8 @@ let jitter_temp = 0.1; // range for random jitter of cells to remove artifacts
 let progress;
 let last_timestamp;
 
+let attackers_ndjson_strings, attackers_json;
+
 let total_attacks_south = 0;
 let total_attacks_north = 0;
 let total_attacks_south_per_hour = 0;
@@ -46,7 +48,7 @@ let south_attackers_fids, north_attackers_fids;
 let south_attackers_fids_per_hour = {};
 let north_attackers_fids_per_hour = {};
 
-let south_fids_per_hour_formated, north_fids_per_hour_formated;
+let south_fids_per_hour_formated, north_fids_per_hour_formated, south_usernames_per_hour_formated, north_usernames_per_hour_formated;
 
 
 let left_button_pos, right_button_pos, mouse_pos, left_button_dist, right_button_dist;

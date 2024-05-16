@@ -22,6 +22,30 @@ function format_ndjson_to_json() {
 
 
 
+
+// convert ndjson to json and filter only necessary properties
+// run this separately, then later parse just json directly to speed up loading time
+function format_attackers_to_json() {
+
+    // convert list entries from strings to objects
+    let attackers_ndjson = attackers_ndjson_strings.map(s => JSON.parse(s));
+
+    // extract only needed properties from every entry to save on memory
+    attackers_data = attackers_ndjson.map((entry) => (({ fid, username, displayName, pfp }) => ({ fid, username, displayName, pfp }))(entry));
+
+    // fill attackers_json object with entries from attackers_data, with fid being the key for each attacker
+    attackers_json = {};
+    attackers_data.map((entry) => attackers_json[entry.fid] = entry);
+
+    // copy this from the console, minify and save into a separate json file to be loaded at the beginning
+    console.log(attackers_json);
+
+}
+
+
+
+
+
 // updates data so the new round can be loaded (after round buttons are clicked)
 function recalculate_fc_data() {
 
@@ -154,6 +178,33 @@ function extract_attackers() {
 
 
 
+// extract attackers from all rounds - needed to get the data on users
+function extract_attackers_all_rounds() {
+
+    // reset attackers object
+    all_attackers_fids = {};
+
+    // convert an object into an array
+    let all_fc_data = Object.values(fc_data_json);
+
+    // data elements that include the word "health" - "Player 293084 attacked south for 3 damage. Castle health is now 24869."
+    let all_fc_data_health = all_fc_data.filter(element => element.text.includes("health"));
+
+    // go through all entries
+    for (let i = 0; i < all_fc_data_health.length; i++) {
+        let entry_words = all_fc_data_health[i].text.split(" "); // example ['Player', '376209', 'attacked', 'south', 'for', '10', 'damage.', 'Castle', 'health', 'is', 'now', '561.']
+        let attacker_fid = entry_words[1];
+        all_attackers_fids[attacker_fid] = parseInt(entry_words[1]);
+    }
+
+    console.log(all_attackers_fids);
+    console.log(Object.values(all_attackers_fids));
+    console.log("Number of attackers (all rounds): ", Object.keys(all_attackers_fids).length);
+
+}
+
+
+
 // calculate grid cell and other dimensions so to fit into the screen
 function calculate_dimensions() {
     dim_scale = round((height * middle_layout_height) / grid_n_height, 2);
@@ -272,21 +323,43 @@ function display_damage_per_hour(castle_type, hour_grouped, palette, grid_offset
     }
 
 
-    // format string with fids for display
+    // format string with usernames for display
     if (castle_type == "south") {
-        south_fids_per_hour_formated = Object.keys(south_attackers_fids_per_hour).toString().split(",").join(", ");
-    } else {
-        north_fids_per_hour_formated = Object.keys(north_attackers_fids_per_hour).toString().split(",").join(", ");
-    }
+        //south_fids_per_hour_formated = Object.keys(south_attackers_fids_per_hour).toString().split(",").join(", ");
+        //south_usernames_per_hour_formated = Object.keys(south_attackers_fids_per_hour).map((fid) => attackers_json[fid].username).toString().split(",").join(", ");
+        
+        // using displayName instead of username if it starts with an exclamation mark like so !543245
+        south_usernames_per_hour_formated = Object.keys(south_attackers_fids_per_hour).map((fid) => 
+            { 
+                if (/^!/.test(attackers_json[fid].username)) {
+                    return attackers_json[fid].displayName;
+                } else {
+                    return attackers_json[fid].username;
+                }
+            }
+        ).toString().split(",").join(", ");
 
+    } else {
+        //north_fids_per_hour_formated = Object.keys(north_attackers_fids_per_hour).toString().split(",").join(", ");
+        //north_usernames_per_hour_formated = Object.keys(north_attackers_fids_per_hour).map((fid) => attackers_json[fid].username).toString().split(",").join(", ");
+
+        // using displayName instead of username if it starts with an exclamation mark like so !543245
+        north_usernames_per_hour_formated = Object.keys(north_attackers_fids_per_hour).map((fid) => 
+            { 
+                if (/^!/.test(attackers_json[fid].username)) {
+                    return attackers_json[fid].displayName;
+                } else {
+                    return attackers_json[fid].username;
+                }
+            }
+        ).toString().split(",").join(", ");
+    }
 
 
     // draw leftover castle cells
     if (!stop_drawing_damage) {
 
         let leftover_damage = 25000 - total_damage; // 25000 - total_damage
-        //fill(color("#111111"));
-
 
         for (let i = 0; i < leftover_damage; i++) {
 
@@ -306,7 +379,6 @@ function display_damage_per_hour(castle_type, hour_grouped, palette, grid_offset
             if (castle_type == "south") { gray_tone = 255 - gray_tone }; // invert colors for the south castle
 
             fill(gray_tone);
-
 
             rect(cell_x, cell_y, grid_cell_dim[0] * dim_extra_scale, grid_cell_dim[1] * dim_extra_scale);
 
@@ -355,9 +427,10 @@ function display_damage_legend(castle_type, legend_offset_x, legend_offset_y) {
     strokeWeight(dim_scale * 1);
     stroke(255);
     textSize(dim_scale * 4);
+    textAlign(CENTER, CENTER);
 
-    if (castle_type == "south") { textAlign(LEFT, CENTER); }
-    else { textAlign(RIGHT, CENTER); }
+    //if (castle_type == "south") { textAlign(LEFT, CENTER); }
+    //else { textAlign(RIGHT, CENTER); }
 
     // this will correspond to the hour displayed at the bottom of the screen
     let start_hour = new Date(north_hour_grouped[0][0].timestamp).getHours() + 1;
@@ -417,33 +490,28 @@ function display_titles() {
     text("!attack south", gap_between_castles / 2, height * 3 * upper_layout_height / 3);
     text("total attackers: " + total_attackers_south.toString(), gap_between_castles / 2, height * 5 * upper_layout_height / 3);
     text("total attacks: " + total_attacks_south.toString(), gap_between_castles / 2, height * 6 * upper_layout_height / 3);
-    text("total attacks per hour: " + total_attacks_south_per_hour.toString(), gap_between_castles / 2, height * 9 * upper_layout_height / 3);
+    text("total attacks per hour: " + total_attacks_south_per_hour.toString(), gap_between_castles / 2, height * 8 * upper_layout_height / 3);
 
-    text("northern attackers:", gap_between_castles / 2, height * 10 * upper_layout_height / 3);
+    text("northern attackers:", gap_between_castles / 2, height * 9 * upper_layout_height / 3);
 
 
     textAlign(RIGHT, BOTTOM);
     text("!attack north", width - gap_between_castles / 2, height * 3 * upper_layout_height / 3);
     text("total attackers: " + total_attackers_north.toString(), width - gap_between_castles / 2, height * 5 * upper_layout_height / 3);
     text("total attacks: " + total_attacks_north.toString(), width - gap_between_castles / 2, height * 6 * upper_layout_height / 3);
-    text("total attacks per hour: " + total_attacks_north_per_hour.toString(), width - gap_between_castles / 2, height * 9 * upper_layout_height / 3);
+    text("total attacks per hour: " + total_attacks_north_per_hour.toString(), width - gap_between_castles / 2, height * 8 * upper_layout_height / 3);
 
-    text("southern attackers:", width - gap_between_castles / 2, height * 10 * upper_layout_height / 3);
-
+    text("southern attackers:", width - gap_between_castles / 2, height * 9 * upper_layout_height / 3);
 
 
     rectMode(CORNER);
     textSize(dim_scale * 7);
 
     textAlign(LEFT, TOP);
-    text(south_fids_per_hour_formated, gap_between_castles / 2, height * 11 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
+    text(south_usernames_per_hour_formated, gap_between_castles, height * 10 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
 
     textAlign(RIGHT, TOP);
-    text(north_fids_per_hour_formated, width - gap_between_castles / 2 - (width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles), height * 11 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
-
-
-    //console.log(south_fids_per_hour_formated);
-    // 19591, 189524, 191958, 192952, 214447, 248509, 250747, 261222, 263300, 266527, 266798, 292208, 296520, 299008, 301276, 301870, 322222, 327318, 338424, 342002, 367801, 368305, 377517, 381561, 382922, 383446, 385262, 401736, 404667, 405589, 412805, 415074, 420682, 431836, 432323, 436149, 447595
+    text(north_usernames_per_hour_formated, width - gap_between_castles - (width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles), height * 10 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
 
 
     rectMode(CENTER);

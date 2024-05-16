@@ -13,11 +13,13 @@
 function preload() {
 
   MonoMEK = loadFont('assets/MEK-Mono.otf');
-  fc_data_json = loadJSON("./data/farcastles_fc_data_rounds_1-22.json");
+  fc_data_json = loadJSON("./data/farcastles_fc_data_rounds_1-22.json", () => { console.log("✅ Farcaster data loaded") });
+  attackers_json = loadJSON("./data/attackers_rounds_1-22.json", () => { console.log("✅ Attackers data loaded") });
 
   // load ndjson data - every line is a separate string in a list
   // comment OUT in production
-  //fc_data_ndjson_strings = loadStrings("./data/240515_farcastles_fc_data_timestamped.ndjson", () => { console.log("Farcaster data loaded ✅") });
+  //fc_data_ndjson_strings = loadStrings("./data/240515_farcastles_fc_data_timestamped.ndjson", () => { console.log("✅ Farcaster data loaded") });
+  //attackers_ndjson_strings = loadStrings("./data/attackers_rounds_1-22.ndjson", () => { console.log("✅ Attackers data loaded") });
 
 }
 
@@ -34,6 +36,7 @@ function setup() {
   // convert ndjson to json and filter only necessary properties
   // comment OUT in production - run this separately, then later parse just json directly to speed up loading time
   //format_ndjson_to_json();
+  //format_attackers_to_json();
 
   // parse and extract farcastles data from the nson file
   parse_fc_data();
@@ -44,6 +47,9 @@ function setup() {
   // calculate grid cell and other dimensions so to fit into the screen
   calculate_dimensions();
   
+  // extract attackers from all rounds - needed to get the data on users
+  // comment OUT in production
+  //extract_attackers_all_rounds();
 }
 
 
