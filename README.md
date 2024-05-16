@@ -1,4 +1,4 @@
-![Farcastles War Table](https://github.com/lukapiskorec/farcastles-war-table/blob/main/assets/farcastles_war_table_logo_796.gif?raw=true)
+![Farcastles War Table](https://github.com/lukapiskorec/farcastles-war-table/blob/main/assets/farcastles_war_table_logo_9019.gif?raw=true)
 
 
 # Farcastles War Table
