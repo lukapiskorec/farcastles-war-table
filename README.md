@@ -1,9 +1,12 @@
+![Farcastles War Table](https://github.com/lukapiskorec/farcastles-war-table/blob/main/assets/farcastles_war_table_logo_796.gif?raw=true)
+
+
 # Farcastles War Table
 Interactive war table for Farcastles, a text-based game on Farcaster, where players engage in a strategic battle between two castles: North and South. This app was built to help visualize what is happening in the game as it evolves.
 
-🚧 UNDER DEVELOPMENT 🚧
+You can access the app through the link (desktop only for now): [Farcastles War Table](https://lukapiskorec.github.io/farcastles-war-table/)
 
-### Links
+### Info links
 
 [Farcastles channel](https://warpcast.com/~/channel/farcastles)
 
