@@ -88,13 +88,11 @@ function parse_fc_data() {
     fc_data_south.reverse();
     fc_data_north.reverse();
 
+    console.log("...................");
     console.log("Total data entries: ", fc_data.length);
     console.log("Data entries south: ", fc_data_south.length);
     console.log("Data entries north: ", fc_data_north.length);
     console.log("Other data entries: ", fc_data.length - fc_data_north.length - fc_data_south.length);
-
-    //console.log(fc_data_south);
-    //console.log(fc_data_north);
 
     total_attacks_south = fc_data_south.length;
     total_attacks_north = fc_data_north.length;
@@ -209,7 +207,7 @@ function extract_attackers_all_rounds() {
 function calculate_dimensions() {
     dim_scale = round((height * middle_layout_height) / grid_n_height, 2);
     grid_cell_dim = [dim_scale, dim_scale];
-    console.log("dimension scale", dim_scale);
+    //console.log("dimension scale", dim_scale);
 }
 
 
@@ -482,7 +480,7 @@ function display_titles() {
     textAlign(CENTER, BOTTOM);
     if (last_timestamp) {
         let datestring = last_timestamp.getHours() + ":00";
-        text(datestring, width / 2, height - height * 2 * upper_layout_height / 3);
+        text(datestring, width / 2, height - height * 2 * lower_layout_height / 3);
         text(last_timestamp.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), width / 2, height - height * upper_layout_height / 3);
     }
 
@@ -490,7 +488,7 @@ function display_titles() {
     text("!attack south", gap_between_castles / 2, height * 3 * upper_layout_height / 3);
     text("total attackers: " + total_attackers_south.toString(), gap_between_castles / 2, height * 5 * upper_layout_height / 3);
     text("total attacks: " + total_attacks_south.toString(), gap_between_castles / 2, height * 6 * upper_layout_height / 3);
-    text("total attacks per hour: " + total_attacks_south_per_hour.toString(), gap_between_castles / 2, height * 8 * upper_layout_height / 3);
+    text("attacks per hour: " + total_attacks_south_per_hour.toString(), gap_between_castles / 2, height * 8 * upper_layout_height / 3);
 
     text("northern attackers:", gap_between_castles / 2, height * 9 * upper_layout_height / 3);
 
@@ -499,7 +497,7 @@ function display_titles() {
     text("!attack north", width - gap_between_castles / 2, height * 3 * upper_layout_height / 3);
     text("total attackers: " + total_attackers_north.toString(), width - gap_between_castles / 2, height * 5 * upper_layout_height / 3);
     text("total attacks: " + total_attacks_north.toString(), width - gap_between_castles / 2, height * 6 * upper_layout_height / 3);
-    text("total attacks per hour: " + total_attacks_north_per_hour.toString(), width - gap_between_castles / 2, height * 8 * upper_layout_height / 3);
+    text("attacks per hour: " + total_attacks_north_per_hour.toString(), width - gap_between_castles / 2, height * 8 * upper_layout_height / 3);
 
     text("southern attackers:", width - gap_between_castles / 2, height * 9 * upper_layout_height / 3);
 
@@ -508,11 +506,31 @@ function display_titles() {
     textSize(dim_scale * 7);
 
     textAlign(LEFT, TOP);
-    text(south_usernames_per_hour_formated, gap_between_castles, height * 10 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
+    text(south_usernames_per_hour_formated, gap_between_castles, height * 9 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
 
     textAlign(RIGHT, TOP);
-    text(north_usernames_per_hour_formated, width - gap_between_castles - (width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles), height * 10 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
+    text(north_usernames_per_hour_formated, width - gap_between_castles - (width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles), height * 9 * upper_layout_height / 3, width / 2 - grid_n_width * grid_cell_dim[0] - gap_between_castles); // last parameter is maxWidth of the text box
 
+
+
+    textSize(dim_scale * 8);
+
+    textAlign(LEFT, BOTTOM);
+
+    if (floor(frameCount / 50) % 3 == 0) {
+        animate_text("MonoMEK by MEK.txt", "south",  gap_between_castles / 2, height - height * lower_layout_height / 3);
+    } else if (floor(frameCount / 50) % 3 == 1) {
+        animate_text("Farcaster data by Neynar", "south",  gap_between_castles / 2, height - height * lower_layout_height / 3);
+    } else if (floor(frameCount / 50) % 3 == 2) {
+        animate_text("GitHub -> farcastles-war-table", "south",  gap_between_castles / 2, height - height * lower_layout_height / 3);
+    }
+
+    textAlign(RIGHT, BOTTOM);
+    if (floor((frameCount + 25) / 50) % 2 == 0) {
+        animate_text("{protocell:labs} | 2024", "north",  width - gap_between_castles / 2, height - height * lower_layout_height / 3);
+    } else if (floor((frameCount + 25) / 50) % 2 == 1) {
+        animate_text("Farcaster -> @luka", "north",  width - gap_between_castles / 2, height - height * lower_layout_height / 3);
+    }
 
     rectMode(CENTER);
 
@@ -606,7 +624,7 @@ function mouseClicked() {
 
     // left round button clicked
     if (left_button_dist < round_button_size * dim_scale / 2) {
-        console.log("left button clicked");
+        //console.log("left button clicked");
 
         // decrement round number
         selected_round--
@@ -620,7 +638,7 @@ function mouseClicked() {
 
     // right round button clicked
     if (right_button_dist < round_button_size * dim_scale / 2) {
-        console.log("right button clicked");
+        //console.log("right button clicked");
 
         // increment round number
         selected_round++

@@ -143,5 +143,3 @@ let palette_north = palettes_hue_sorted[gene_rand_int(0, palettes_hue_sorted.len
 //palette_south = getShiftedArray(test_palette, 0);
 //palette_north = getShiftedArray(palette_north, 0);
 
-//console.log(palette_south);
-//console.log(palette_north);
