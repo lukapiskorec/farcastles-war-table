@@ -65,6 +65,10 @@ function recalculate_fc_data() {
     south_attackers_fids_per_hour = {};
     north_attackers_fids_per_hour = {};
 
+    // new palettes for every round
+    palette_south = palettes_hue_sorted[gene_rand_int(0, palettes_hue_sorted.length)];
+    palette_north = palettes_hue_sorted[gene_rand_int(0, palettes_hue_sorted.length)];
+
 }
 
 
